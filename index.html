@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Be My Valentine ❤️</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      overflow: hidden; /* prevents scrollbars */
+    }
+
+    /* Main Box */
+    .box_container {
+      background: white;
+      padding: 40px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      width: 340px;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      color: #ff4d6d;
+      margin-bottom: 30px;
+    }
+
+    /* Buttons */
+    .button_container {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      position: relative;
+      height: 60px;
+    }
+
+    button {
+      padding: 10px 25px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #yes_button {
+      background: #ff4d6d;
+      color: white;
+      z-index: 2;
+    }
+
+    #no_button {
+      background: #999;
+      color: white;
+      /* Start as normal flex position */
+    }
+
+    /* Overlay */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    /* Notification Card */
+    .notif_card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      animation: pop_in 0.3s ease;
+    }
+
+    @keyframes pop_in {
+      from { transform: scale(0.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .notif_card h2 {
+      color: #ff4d6d;
+      margin-bottom: 15px;
+    }
+
+    .notif_details {
+      text-align: left;
+      margin: 20px 0;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .notif_details strong {
+      color: #ff4d6d;
+    }
+
+    .close_button {
+      background: #ff4d6d;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="box_container">
+
+    <h1>Will you be my Valentine? 💖</h1>
+
+    <div class="button_container">
+      <button id="yes_button">Yes 💘</button>
+      <button id="no_button">No 💔</button>
+    </div>
+
+  </div>
+
+  <!-- Notification -->
+  <div class="overlay" id="overlay">
+    <div class="notif_card">
+      <h2>It's a Date! ❤️</h2>
+      <p>I'm so happy you said yes! 🥰</p>
+      <div class="notif_details">
+        📍 <strong>Venue:</strong> SM Mall of Asia (MOA)<br>
+        ⏰ <strong>Time:</strong> 1:00 PM<br>
+        👕 <strong>Dress Code:</strong> Smart Casual / Comfortable Attire
+      </div>
+      <p>Can't wait to see you! 💕</p>
+      <button class="close_button" id="close_button">
+        See You There 😘
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const no_button = document.getElementById("no_button");
+    const yes_button = document.getElementById("yes_button");
+    const overlay = document.getElementById("overlay");
+    const close_button = document.getElementById("close_button");
+
+    let is_absolute = false;
+
+    // Move No button anywhere on screen
+    function move_no_button() {
+      // Convert No to fixed only after first hover
+      if(!is_absolute){
+        const rect = no_button.getBoundingClientRect();
+        no_button.style.position = "fixed";
+        no_button.style.left = rect.left + "px";
+        no_button.style.top = rect.top + "px";
+        is_absolute = true;
+      }
+
+      const btn_width = no_button.offsetWidth;
+      const btn_height = no_button.offsetHeight;
+
+      const max_x = window.innerWidth - btn_width;
+      const max_y = window.innerHeight - btn_height;
+
+      let random_x = Math.random() * max_x;
+      let random_y = Math.random() * max_y;
+
+      // Keep safe distance from Yes button
+      const yes_rect = yes_button.getBoundingClientRect();
+      const safe_distance = 100; // pixels
+
+      let attempts = 0;
+      while (
+        Math.hypot(random_x - yes_rect.left, random_y - yes_rect.top) < safe_distance
+        && attempts < 50
+      ) {
+        random_x = Math.random() * max_x;
+        random_y = Math.random() * max_y;
+        attempts++;
+      }
+
+      no_button.style.left = random_x + "px";
+      no_button.style.top = random_y + "px";
+    }
+
+    // Desktop
+    no_button.addEventListener("mouseover", move_no_button);
+
+    // Mobile
+    no_button.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      move_no_button();
+    });
+
+    // Yes button: show popup
+    yes_button.addEventListener("click", () => {
+      overlay.style.display = "flex";
+    });
+
+    // Close notification
+    close_button.addEventListener("click", () => {
+      overlay.style.display = "none";
+    });
+
+    // Keep No button inside screen on resize
+    window.addEventListener("resize", () => {
+      const rect = no_button.getBoundingClientRect();
+      if(rect.right > window.innerWidth) no_button.style.left = (window.innerWidth - rect.width) + "px";
+      if(rect.bottom > window.innerHeight) no_button.style.top = (window.innerHeight - rect.height) + "px";
+    });
+
+  </script>
+
+</body>
+</html>
