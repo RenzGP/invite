@@ -10,10 +10,20 @@
       background: linear-gradient(135deg, #ff9a9e, #fad0c4);
       height: 100vh;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       margin: 0;
-      overflow: hidden; /* prevents scrollbars */
+      overflow: hidden;
+    }
+
+    /* Sadness image */
+    #sad_img {
+      width: 200px;
+      margin-bottom: 20px; /* space above box_container */
+      display: none; /* hidden at start */
+      z-index: 20;
+      pointer-events: none;
     }
 
     /* Main Box */
@@ -60,7 +70,7 @@
     #no_button {
       background: #999;
       color: white;
-      /* Start as normal flex position */
+      position: relative;
     }
 
     /* Overlay */
@@ -122,18 +132,18 @@
 </head>
 <body>
 
+  <!-- Sadness Image -->
+  <img id="sad_img" src="1.png">
+
   <div class="box_container">
-
     <h1>Will you be my Valentine? 💖</h1>
-
     <div class="button_container">
       <button id="yes_button">Yes 💘</button>
       <button id="no_button">No 💔</button>
     </div>
-
   </div>
 
-  <!-- Notification -->
+  <!-- Notification Overlay -->
   <div class="overlay" id="overlay">
     <div class="notif_card">
       <h2>It's a Date! ❤️</h2>
@@ -144,9 +154,7 @@
         👕 <strong>Dress Code:</strong> Smart Casual / Comfortable Attire
       </div>
       <p>Can't wait to see you! 💕</p>
-      <button class="close_button" id="close_button">
-        See You There 😘
-      </button>
+      <button class="close_button" id="close_button">See You There 😘</button>
     </div>
   </div>
 
@@ -155,74 +163,60 @@
     const yes_button = document.getElementById("yes_button");
     const overlay = document.getElementById("overlay");
     const close_button = document.getElementById("close_button");
+    const sad_img = document.getElementById("sad_img");
 
-    let is_absolute = false;
+    let current_img = 0;
+    const total_imgs = 5;
 
-    // Move No button anywhere on screen
     function move_no_button() {
-      // Convert No to fixed only after first hover
-      if(!is_absolute){
-        const rect = no_button.getBoundingClientRect();
-        no_button.style.position = "fixed";
-        no_button.style.left = rect.left + "px";
-        no_button.style.top = rect.top + "px";
-        is_absolute = true;
-      }
-
       const btn_width = no_button.offsetWidth;
       const btn_height = no_button.offsetHeight;
-
       const max_x = window.innerWidth - btn_width;
       const max_y = window.innerHeight - btn_height;
 
       let random_x = Math.random() * max_x;
       let random_y = Math.random() * max_y;
 
-      // Keep safe distance from Yes button
       const yes_rect = yes_button.getBoundingClientRect();
-      const safe_distance = 100; // pixels
-
+      const safe_distance = 100;
       let attempts = 0;
       while (
-        Math.hypot(random_x - yes_rect.left, random_y - yes_rect.top) < safe_distance
-        && attempts < 50
+        Math.hypot(random_x - yes_rect.left, random_y - yes_rect.top) < safe_distance &&
+        attempts < 50
       ) {
         random_x = Math.random() * max_x;
         random_y = Math.random() * max_y;
         attempts++;
       }
 
+      no_button.style.position = "fixed";
       no_button.style.left = random_x + "px";
       no_button.style.top = random_y + "px";
+
+      // Show next sadness image (stays until next click)
+      current_img = (current_img % total_imgs) + 1;
+      sad_img.src = `${current_img}.png`;
+      sad_img.style.display = "block";
     }
 
-    // Desktop
-    no_button.addEventListener("mouseover", move_no_button);
+    // Click event for NO button
+    no_button.addEventListener("click", move_no_button);
 
-    // Mobile
-    no_button.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      move_no_button();
-    });
-
-    // Yes button: show popup
+    // Yes button click: show overlay and hide sadness image
     yes_button.addEventListener("click", () => {
       overlay.style.display = "flex";
+      sad_img.style.display = "none"; // hide sadness image
     });
 
-    // Close notification
     close_button.addEventListener("click", () => {
       overlay.style.display = "none";
     });
 
-    // Keep No button inside screen on resize
     window.addEventListener("resize", () => {
       const rect = no_button.getBoundingClientRect();
       if(rect.right > window.innerWidth) no_button.style.left = (window.innerWidth - rect.width) + "px";
       if(rect.bottom > window.innerHeight) no_button.style.top = (window.innerHeight - rect.height) + "px";
     });
-
   </script>
-
 </body>
 </html>
